@@ -13,7 +13,6 @@ window.onload = function()
                 table.rows[i].cells[j].onclick = function () 
                 {
                     setCookie(this.parentNode.rowIndex, this.cellIndex);
-                    processPuzzle();
                 };
             }
         }
@@ -27,15 +26,5 @@ function setCookie(x, y)
 {
     document.cookie = "x=" + x  + '; path=/;';
     document.cookie = "y=" + y  + '; path=/;';
-}
-
-function processPuzzle()
-{
-	window.location = "../Models/Puzzle.php";
-}
-
-function reset()
-{
-    document.cookie = "reset=" + true + '; path=/;';
-    processPuzzle();
+    window.location = "../Models/Puzzle.php";
 }

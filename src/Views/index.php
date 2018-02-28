@@ -1,5 +1,7 @@
 
 <?php 
+
+/* Start a session. */
 session_start(); 
 
 if(!isset($_SESSION['table'])) 
@@ -41,8 +43,8 @@ if(!isset($_SESSION['table']))
         </table>
         <br />
         <p id="dialog"><?php echo $_SESSION['dialog']; ?></p>
-        <input id="clickMe" type="button" value="Scramble" onclick="shuffle();" />
-        <input id="clickMe" type="button" value="Reset" onclick="reset();" />
+        <a href="../Models/Puzzle.php?action=1">Scramble</a>
+        <a href="../Models/Puzzle.php?action=2">Reset</a>
     </div>
     <script src="../js/puzzle.js"></script>
 </body>
