@@ -1,6 +1,12 @@
-<?php
-  echo $_COOKIE['x'];
-  echo $_COOKIE['y'];
+
+<?php 
+session_start(); 
+
+if(!isset($_SESSION['table'])) 
+{
+    header("Location:../Models/Puzzle.php");
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -19,27 +25,25 @@
     <div class="container text-center" style="margin-top:18vh;">
         <h2>8 Puzzle</h2>
         <table id="tableID" style="cursor: pointer;" class="mx-auto align-middle">
-            <tr>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
-            </tr>
-            <tr>
-                <td>8</td>
-                <td> </td>
-                <td>4</td>
-            </tr>
-            <tr>
-                <td>7</td>
-                <td>6</td>
-                <td>5</td>
-            </tr>
+            <?php
+                for($i = 0; $i < 3; $i++)
+                {
+                    echo "<tr>";
+                    for($j = 0; $j < 3; $j++)
+                    {
+                        echo "<td>";
+                        print($_SESSION['table'][$i][$j]);
+                        echo "</td>";
+                    }
+                    echo "</tr>";
+                }
+            ?>
         </table>
         <br />
-        <p id="dialog"></p>
+        <p id="dialog"><?php echo $_SESSION['dialog']; ?></p>
         <input id="clickMe" type="button" value="Scramble" onclick="shuffle();" />
+        <input id="clickMe" type="button" value="Reset" onclick="reset();" />
     </div>
     <script src="../js/puzzle.js"></script>
-
 </body>
 </html>

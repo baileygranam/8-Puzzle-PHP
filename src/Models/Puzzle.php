@@ -1,42 +1,79 @@
 <?php
 
+session_start();
+
+if(isset($_COOKIE['reset']) && $_COOKIE['reset'] == true)
+{
+	setcookie('reset', '', time() + (86400 * 30), '/');
+	session_destroy();
+	session_unset();
+}
+
+new Puzzle();
+
 class Puzzle
 {
-	private $puzzle;
+	private $table;
 	private $dialog;
 	private $emptyX;
 	private $emptyY;
-	private $nums = [1,2,3,4,5,6,7,8,""];
 
 	/* Constructor */
     public function __construct()
     {
-        $dialog = "Select a piece to swap.";
+    	$this->table  = $_SESSION['table'];
+    	$this->emptyX = $_SESSION['emptyX'];
+    	$this->emptyY = $_SESSION['emptyY'];
+
+    	if(!isset($_SESSION['table']))
+    	{
+    		$this->newPuzzle();
+        	$_SESSION['dialog'] = "Select a piece to swap.";	
+    	}
+    	if(isset($_COOKIE['x']) && isset($_COOKIE['y']))
+    	{
+    		$this->swap($_COOKIE['x'], $_COOKIE['y']);
+    		
+    	}
+    	print_r($_COOKIE);
     }
 
-    public function swap()
+    private function newPuzzle()
     {
-    	if(validateSwap($i, $j))
+    	$_SESSION['table'] = array(
+    		array(1,2,3),
+    		array(8,"",4),
+    		array(7,6,5));
+
+    	$_SESSION['emptyX'] = 1;
+    	$_SESSION['emptyY'] = 1;
+    	header("../Views/");
+    }
+
+    public function swap($i, $j)
+    {
+    	if($this->validateSwap($i, $j))
     	{
-	        table.rows[empty_x].cells[empty_y].innerHTML = table.rows[i].cells[j].innerHTML;
-	        table.rows[i].cells[j].innerHTML = "";
-	        $emptyX = $i;
-	        $emptyY = $j;
-	        $dialog = "Piece Moved!";
+    		$_SESSION['table'][$this->emptyX][$this->emptyY] = $_SESSION['table'][$i][$j];
+    		$_SESSION['table'][$i][$j] = "";
+	        $_SESSION['emptyX'] = $i;
+	        $_SESSION['emptyY'] = $j;
+	        $_SESSION['dialog'] = "Piece Moved!";
 	    }
     	else
     	{
-	        $dialog = "Error: You can not make this move.";
+	        $_SESSION['dialog'] = "Error: You can not make this move.";
     	}
+    	header("Location:../Views/index.php");
     }
 
-    private function validateSwap(i, j)
+    private function validateSwap($i, $j)
     {
     	if(
-        ($i == ($emptyX+1) && $j == $emptyY) ||
-        ($i == ($emptyX-1) && $j == $emptyY) ||
-        ($i == $emptyX && $j == ($emptyY+1)) ||
-        ($i == $emptyX && $j == ($emptyY-1)))
+        ($i == ($this->emptyX+1) && $j == $this->emptyY) ||
+        ($i == ($this->emptyX-1) && $j == $this->emptyY) ||
+        ($i == $this->emptyX && $j == ($this->emptyY+1)) ||
+        ($i == $this->emptyX && $j == ($this->emptyY-1)))
         {
         	return true;
         }
@@ -48,7 +85,6 @@ class Puzzle
 
     public function shuffle() 
     {
-    	$j, $x, $i;
   		$z = 0;
 
 	    for ($i = sizeof($nums) - 1; $i >= 0; $i--) 
@@ -69,7 +105,7 @@ class Puzzle
 	               $emptyY = $j;
 	            }
 
-	            table.rows[i].cells[j].innerHTML = nums[z];
+	            // table.rows[i].cells[j].innerHTML = nums[z];
 	            $z++;
 	        }
 	    }
