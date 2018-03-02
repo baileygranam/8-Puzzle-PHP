@@ -88,6 +88,11 @@ class Puzzle
     	}
     	/* Clear the cookies. */
     	$this->clearCookies();
+
+    	if($this->isSolved())
+    	{
+    		$_SESSION['dialog'] = "<h1>Puzzle Solved!</h1>";
+    	}
     }
 
     /* Method to validate the legitimacy of a swap. */
@@ -171,6 +176,35 @@ class Puzzle
 		setcookie('x', '', time() + (86400 * 30), "/");
 	    setcookie('y', '', time() + (86400 * 30), "/");
 	}
+
+	/** 
+	* Method to check if the puzzle is solved.
+	*/
+	private function isSolved()
+	{
+		/* Array of values to scramble. */
+    	$nums = [1,2,3,8,'',4,7,6,5];
+
+    	$k = 0;
+		/* Loop through each row. */
+	    for($i=0; $i < 3; $i++)
+	    {
+	    	/* Loop through each column. */
+	        for($j=0; $j < 3; $j++)
+	        {
+	        	/* Check to see if all values match the solved state. .*/
+	            if($nums[$k] != $_SESSION['table'][$i][$j])
+	            {
+	               return false;
+	            }
+	            
+	            /* Increment k. */
+	            $k++;
+	        }
+	    } return true;
+	}
+
+	
 }
 
 
