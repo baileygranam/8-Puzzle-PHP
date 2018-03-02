@@ -1,9 +1,5 @@
 <?php
 
-session_start();
-
-new Puzzle();
-
 class Puzzle
 {
 	/* Variables */
@@ -15,55 +11,55 @@ class Puzzle
     public function __construct()
     {
     	/* Check to see if table, emptyX, and emptyY are set. */
-    	if(isset($_SESSION['table']) && isset($_SESSION['emptyX']) && isset($_SESSION['emptyY']))
+    	if($this->isPuzzleSet())
     	{
-    		/* Define class variables based on previous session values. */
+    		/* Define class variables based on stored session values. */
 	    	$this->table  = $_SESSION['table'];
 	    	$this->emptyX = $_SESSION['emptyX'];
 	    	$this->emptyY = $_SESSION['emptyY'];
 
-	    	/* 
-	    	   Check to see if cookie is set. If it is then we make an 
-	    	   attempt to swap spots on the 8 puzzle. 
-	    	*/
-	    	if(isset($_COOKIE['x']) && isset($_COOKIE['y']))
-	    	{
-	    		$this->swap($_COOKIE['x'], $_COOKIE['y']);
-	    		setcookie('x', '', time() + (86400 * 30), "/");
-	    		setcookie('y', '', time() + (86400 * 30), "/");
-	    	}
+			/* Check to see if cookie is set. If it is then we try to swap spots. */ 
+		    if($this->isCookieSet())
+		    {
+		    	$this->swap($_COOKIE['x'], $_COOKIE['y']);
+		    }  
+		    /* Check to see if an action was chosen by the user. */
+			if(isset($_POST['action'])) 
+			{
+				/* Reset puzzle. */
+			    if($_POST['action'] == 'Reset')
+			    {
+					$this->newPuzzle();
+			    }
+			    /* Scramble puzzle. */
+			    else if($_POST['action'] == 'Scramble')
+			    {
+			    	$this->scramble();
+			    }
+			}     
 	    }
-	    else /* If puzzle is not set in the sessions then create a new puzzle board. */
+	    /* If puzzle is not set in the sessions then create a new puzzle board. */
+	    else
 	    {
 	    	$this->newPuzzle();
-        	$_SESSION['dialog'] = "Select a piece to swap.";
 	    }
-		if(isset($_GET['action'])) /* Check to see if an action was chosen by the user. */
-		{
-		    if($_GET['action'] == 2) /* Reset puzzle. */
-		    {
-				session_destroy();
-				session_unset();
-		    }
-
-		    if($_GET['action'] == 1) /* Scramble puzzle. */
-		    {
-		    	$this->scramble();
-		    }
-		}       
-	header("Location:../Views/"); /* Redirect back to puzzle page. */
    	}
 
    	/* Method to create a new default puzzle. */
     private function newPuzzle()
     {
+    	/* Create the table in the solved state. */
     	$_SESSION['table'] = array(
     		array(1,2,3),
     		array(8,"",4),
     		array(7,6,5));
 
+    	/* Store the location of the empty square on the table. */
     	$_SESSION['emptyX'] = 1;
     	$_SESSION['emptyY'] = 1;
+
+    	/* Store the user dialog. */
+    	$_SESSION['dialog'] = "Select a piece to swap.";
     }
 
     /* Method to swap two adjacent squares.
@@ -71,18 +67,27 @@ class Puzzle
      */
     public function swap($i, $j)
     {
+    	/* Check to see if the attempted swap is valid. */
     	if($this->validateSwap($i, $j))
     	{
+    		/* Swap empty square with selected square. */
     		$_SESSION['table'][$this->emptyX][$this->emptyY] = $_SESSION['table'][$i][$j];
     		$_SESSION['table'][$i][$j] = "";
+
+    		/* Update the (x,y) location of the empty square. */
 	        $_SESSION['emptyX'] = $i;
 	        $_SESSION['emptyY'] = $j;
+
+	        /* Set the dialog. */
 	        $_SESSION['dialog'] = "Piece Moved!";
 	    }
     	else
     	{
+    		/* Set the dialog. */
 	        $_SESSION['dialog'] = "Error: You can not make this move.";
     	}
+    	/* Clear the cookies. */
+    	$this->clearCookies();
     }
 
     /* Method to validate the legitimacy of a swap. */
@@ -105,32 +110,66 @@ class Puzzle
     /* Method to randomly scramble the 8 puzzle. */
     public function scramble() 
     {
+    	/* Array of values to scramble. */
     	$nums = [1,2,3,4,5,6,7,8,''];
-  		$z = 0;
 
-	    for ($i = 7; $i >= 0; $i--) 
-	    {
-	        $j = floor(rand(0,1) * ($i + 1));
-	        $x = $nums[$i];
-	        $nums[$i] = $nums[$j];
-	        $nums[$j] = $x;
-	    }
+    	/* Shuffle the array. */
+    	shuffle($nums);
 
+    	/* Intiialize k value. */
+  		$k = 0;
+
+  		/* Loop through each row. */
 	    for($i=0; $i < 3; $i++)
 	    {
+	    	/* Loop through each column. */
 	        for($j=0; $j < 3; $j++)
 	        {
-	            if($nums[$z] == "")
+	        	/* If we come across the empty space then store the location .*/
+	            if($nums[$k] == "")
 	            {
 	               $_SESSION['emptyX'] = $i;
 	               $_SESSION['emptyY'] = $j;
 	            }
-	            $_SESSION['table'][$i][$j] = $nums[$z];
-	            echo $_SESSION['table'][$i][$j];
-	            $z++;
+
+	            /* Assign each value in $nums to the correct table location. */
+	            $_SESSION['table'][$i][$j] = $nums[$k];
+	            
+	            /* Increment k. */
+	            $k++;
 	        }
 	    }
+
+	    /* Set user dialog. */
 	    $_SESSION['dialog'] = "Scrambled!";
+	}
+
+	/**
+	* Method to check to see if the puzzle is set/stored in the current session.
+	* @return True if set, false if not set.
+	*/
+	private function isPuzzleSet()
+	{
+		return (isset($_SESSION['table']) && isset($_SESSION['emptyX']) && isset($_SESSION['emptyY']));
+	}
+
+	/**
+	* Method to check to see if the (x,y) pair is set in the cookie. This
+	* means the user selected a square to swap.
+	* @return True if set, false if not set.
+	*/
+	private function isCookieSet()
+	{
+		return (isset($_COOKIE['x']) && isset($_COOKIE['y']));
+	}
+
+	/**
+	* Method to clear the cookies of the (x,y) pair that was set.
+	*/
+	private function clearCookies()
+	{
+		setcookie('x', '', time() + (86400 * 30), "/");
+	    setcookie('y', '', time() + (86400 * 30), "/");
 	}
 }
 

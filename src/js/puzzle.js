@@ -26,5 +26,5 @@ function setCookie(x, y)
 {
     document.cookie = "x=" + x  + '; path=/;';
     document.cookie = "y=" + y  + '; path=/;';
-    window.location = "../Models/Puzzle.php";
+    window.location = "";
 }

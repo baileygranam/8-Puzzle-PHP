@@ -1,13 +1,14 @@
 
 <?php 
 
+/* Load the Puzzle class. */
+require_once('../Models/Puzzle.php');
+
 /* Start a session. */
 session_start(); 
 
-if(!isset($_SESSION['table'])) 
-{
-    header("Location:../Models/Puzzle.php");
-}
+/* Create new puzzle object. */
+$puzzle = new Puzzle();
 
 ?>
 <!DOCTYPE html>
@@ -43,8 +44,11 @@ if(!isset($_SESSION['table']))
         </table>
         <br />
         <p id="dialog"><?php echo $_SESSION['dialog']; ?></p>
-        <a href="../Models/Puzzle.php?action=1">Scramble</a>
-        <a href="../Models/Puzzle.php?action=2">Reset</a>
+        <form action="" method="POST">
+            <input type="submit" value="Reset" name="action">
+            <input type="submit" value="Scramble" name="action">
+        </form>
+        
     </div>
     <script src="../js/puzzle.js"></script>
 </body>
